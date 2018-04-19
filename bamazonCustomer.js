@@ -18,6 +18,7 @@ var connection = mysql.createConnection({
 connection.connect(function(err) {
     if (err) throw err;
     // run the start function after the connection is made to prompt the user
+    start();
 });
 
 //creates a table to display db
@@ -25,17 +26,17 @@ var displayDB = function() {
     connection.query("SELECT * FROM products", function(err, res) {
         console.log(`\n`);
         console.table(res);
-        console.log(`\n \n`);
+        console.log(`\n`);
     });
 }
 
 //handles user exit
-
 var exit = function() {
-    console.log(`Bye!`);
+    console.log(`\nBye!`);
     connection.end();
 }
 
+//handles user confirm
 var start = function() {
     console.log('\n  ');
     displayDB();
@@ -47,7 +48,6 @@ var start = function() {
     }).then(function(answer) {
         if (answer.confirm === true) {
             buy();
-            // console.log(`let's buy!`);
         } else {
             exit();
         }
@@ -56,7 +56,6 @@ var start = function() {
 
 // function which prompts the user for what they want to buy and deducts how much from DB
 var buy =  function() {
-    // prompt for info about the item being put up for auction
    inquirer
    .prompt([
      {
@@ -71,29 +70,26 @@ var buy =  function() {
      }
    ])
    .then(function(answer) {
-        console.log("Selecting all products...\n");
-        // when finished prompting, insert a new item into the db with that info
+        console.log("\nSelecting all products...\n");
         var item = parseInt(answer.item);
         var stock = parseInt(answer.quantity);
         
-        connection.query(`SELECT stock_quantity FROM products WHERE id = ${item}`, function(err, res) {
+        connection.query(`SELECT stock_quantity, price FROM products WHERE id = ${item}`, function(err, res) {
             if (err) throw err;
-            // Log all results of the SELECT statement
-            //console.log(res[0].stock_quantity);
             if (res[0].stock_quantity < 1){
-            return console.log("Insufficient quantity!")
+                console.log("Insufficient quantity!");
+                start();
             }
             else {
                 var quantity = res[0].stock_quantity - answer.quantity;
+                var total = res[0].price * stock;
                 connection.query(`UPDATE products SET stock_quantity = ${quantity} WHERE id = ${item}`, 
             function(err, res) {
                     if (err) throw err;
-                    // Log all results of the SELECT statement
-                    console.log(res);
+                    console.log(`Success, your total cost was $${total}.`);
+                    start();
                 });
             }
         });
     });
 }
-
-start();
