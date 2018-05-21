@@ -13,7 +13,7 @@
 
 ## How to Use
 
-To use clone repo and simply run: `npm install`
+To use clone repo and simply run `npm install`
 
 And the run `node bamazonCustomer.js`
 
